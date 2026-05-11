@@ -4,29 +4,28 @@ import bots.titfortat as tft
 import bots.beatlast as bl
 import bots.greedy as gd
 import games
+games = games.games
 
 # Globali
-gameHistory = []
+tournament = []
 bots = [tft, bl, gd]
 
-games = games.games
 p1 = random.choice(bots).bot()
 p2 = random.choice(bots).bot()
 
-def playRound(p1, p2, round):
-    global turn
+def playRound(p1, p2, game, turn):
+    round = game[turn]
     if turn == 0:
         res1 = p1.play(round, None)
         res2 = p2.play(round, None)
     else:
-        res1 = p1.play(round, gameHistory[turn - 1]["results"][1])
-        res2 = p2.play(round, gameHistory[turn - 1]["results"][0])
+        res1 = p1.play(round, tournament[game][round][turn - 1]["results"][0])
+        res2 = p2.play(round, tournament[game][round][turn - 1]["results"][0])
 
     # Punteggi
     pts1, pts2 = round[(res1, res2)]
 
-    gameHistory.append({"results": [res1, res2], "pts": [pts1, pts2]})
-    return [pts1, pts2]
+    return [{"results": [res1, res2], "pts": [pts1, pts2]}]
 
 def displayRoundStats(round_data):
     global turn
@@ -56,21 +55,35 @@ def displayGameStats(game_data):
     
     return s1, s2
 
+def displayTournamentStats(bots):
+    print("-" * 10)
+    print("P1's final score: ", totalSums[0])
+    print("P2's final score: ", totalSums[1])
+
 gameIndex = 0
 totalSums = [0,0]
+# Tournament loop
 while (gameIndex < len(games)):
+    # Init new game
     turn = 0
     game = games[gameIndex]
 
-    print(f"CHOSEN GAME {game['name']}\n")
-    print(f"CHOSEN BOTS:\n P1: {p1.name}\n P2: {p2.name}]\n")
+    print(f"CHOSEN GAME: {game['name']}\n")
+    print(f"CHOSEN BOTS:\n P1: {p1.name}\n P2: {p2.name}\n")
+    # Game loop
+    gameHistory = []
     while (turn < len(game["rounds"])):
-        pts = playRound(p1, p2, game["rounds"][turn])
-
-        totalSums[0] += pts[0]
-        totalSums[1] += pts[1]
         
-        turn = turn + 1
+        roundResults = playRound(p1, p2, gameIndex, turn)
+
+        gameHistory.append(roundResults)
+
+        totalSums[0] += roundResults[0]
+        totalSums[1] += roundResults[1]
+        
+        turn += 1
 
     displayGameStats(game)
     gameIndex = gameIndex + 1
+
+displayTournamentStats()
