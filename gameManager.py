@@ -13,14 +13,13 @@ bots = [tft, bl, gd]
 p1 = random.choice(bots).bot()
 p2 = random.choice(bots).bot()
 
-def playRound(p1, p2, game, turn):
-    round = game[turn]
+def playRound(p1, p2, game, round, turn):
     if turn == 0:
         res1 = p1.play(round, None)
         res2 = p2.play(round, None)
     else:
-        res1 = p1.play(round, tournament[game][round][turn - 1]["results"][0])
-        res2 = p2.play(round, tournament[game][round][turn - 1]["results"][0])
+        res1 = p1.play(round, game[turn - 1]["results"][1])
+        res2 = p2.play(round, game[turn - 1]["results"][0])
 
     # Punteggi
     pts1, pts2 = round[(res1, res2)]
@@ -74,7 +73,9 @@ while (gameIndex < len(games)):
     gameHistory = []
     while (turn < len(game["rounds"])):
         
-        roundResults = playRound(p1, p2, gameIndex, turn)
+        round = game[turn]
+
+        roundResults = playRound(p1, p2, gameHistory, round, turn)
 
         gameHistory.append(roundResults)
 
