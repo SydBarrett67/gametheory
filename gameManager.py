@@ -3,12 +3,16 @@ import random
 import bots.titfortat as tft
 import bots.beatlast as bl
 import bots.greedy as gd
+import bots.A100 as a100
+import bots.B100 as b100
+import bots.generous as gn
+import bots.minimax as mm
 import games
-games = games.games
+games_list = random.sample(games.games, len(games.games))
 
 # Globali
 tournament = []
-bots = [tft.bot(), bl.bot(), gd.bot()]
+bots = [tft.bot(), bl.bot(), gd.bot(), a100.bot(), b100.bot(), gn.bot(), mm.bot()]
 champ_pairs = []
 for i in range(len(bots)):
     for j in range(i + 1, len(bots)):
@@ -65,12 +69,13 @@ def displayTournamentStats(bots = []):
 
 def displayChampionshipStats(results):
     
-    points = []
+    sorted_results = sorted(results.items(), key=lambda item: item[1], reverse=True)
 
-    # Get formatted string
-    for name, score in results.items():
-        # Formatted string
-        str_points = f"{name}: {score}"
+    points = []
+    
+    # 2. Cicla direttamente sulla lista ordinata
+    for name, score in sorted_results:
+        str_points = (f"{name}: {score}")
         points.append(str_points)
 
     print("----- FINAL STANDING -----")
@@ -89,14 +94,14 @@ while (pair_index < len(champ_pairs)):
     p1 = selected_bots[0]
     p2 = selected_bots[1]
 
-    print(f"----- TOURNAMENT #", pair_index + 1, " -----")
-    print(f"CHOSEN BOTS:\n P1: {p1.name}\n P2: {p2.name}\n")
+    #print(f"----- TOURNAMENT #", pair_index + 1, " -----")
+    #print(f"CHOSEN BOTS:\n P1: {p1.name}\n P2: {p2.name}\n")
 
     # Tournament
     gameIndex = 0
-    while (gameIndex < len(games)):
+    while (gameIndex < len(games_list)):
         # Choose new game
-        game = games[gameIndex]
+        game = games_list[gameIndex]
 
         #print(f"CHOSEN GAME: {game['name']}\n")       
 
@@ -115,8 +120,8 @@ while (pair_index < len(champ_pairs)):
             gameHistory.append(roundResults)
 
             # Add to global point sum
-            standings[p1.name] += roundResults["results"][0]
-            standings[p2.name] += roundResults["results"][1]
+            standings[p1.name] += roundResults["pts"][0]
+            standings[p2.name] += roundResults["pts"][1]
             
             turn += 1
 
