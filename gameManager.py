@@ -8,10 +8,16 @@ games = games.games
 
 # Globali
 tournament = []
-bots = [tft, bl, gd]
+bots = [tft.bot(), bl.bot(), gd.bot()]
+champ_pairs = []
+for i in range(len(bots)):
+    for j in range(i + 1, len(bots)):
+        champ_pairs.append((bots[i], bots[j]))
 
-p1 = random.choice(bots).bot()
-p2 = random.choice(bots).bot()
+#print(champ_pairs)
+
+#p1 = random.choice(bots).bot()
+#p2 = random.choice(bots).bot()
 
 def playRound(p1, p2, game, round, turn):
     if turn == 0:
@@ -24,7 +30,7 @@ def playRound(p1, p2, game, round, turn):
     # Punteggi
     pts1, pts2 = round[(res1, res2)]
 
-    return [{"results": [res1, res2], "pts": [pts1, pts2]}]
+    return {"results": [res1, res2], "pts": [pts1, pts2]}
 
 def displayRoundStats(round_data):
     global turn
@@ -40,9 +46,7 @@ def displayRoundStats(round_data):
     print(f"P2 gained {gameHistory[turn]['pts'][1]} points\n")
     print("--------------------\n\n\n")
 
-def displayGameStats(game_data):
-    rounds = len(game_data["rounds"])
-    res = gameHistory[-rounds:] 
+def displayGameStats(res):
     
     s1 = sum(r["pts"][0] for r in res)
     s2 = sum(r["pts"][1] for r in res)
@@ -54,37 +58,74 @@ def displayGameStats(game_data):
     
     return s1, s2
 
-def displayTournamentStats(bots):
+def displayTournamentStats(bots = []):
     print("-" * 10)
     print("P1's final score: ", totalSums[0])
     print("P2's final score: ", totalSums[1])
 
-gameIndex = 0
-totalSums = [0,0]
-# Tournament loop
-while (gameIndex < len(games)):
-    # Init new game
-    turn = 0
-    game = games[gameIndex]
+def displayChampionshipStats(results):
+    
+    points = []
 
-    print(f"CHOSEN GAME: {game['name']}\n")
+    # Get formatted string
+    for name, score in results.items():
+        # Formatted string
+        str_points = f"{name}: {score}"
+        points.append(str_points)
+
+    print("----- FINAL STANDING -----")
+    for i in points:
+        print(i)
+
+pair_index = 0
+standings = {bot.name: 0 for bot in bots}
+
+# Championship loop
+while (pair_index < len(champ_pairs)):
+
+    # Select two bots
+    selected_bots = champ_pairs[pair_index]
+
+    p1 = selected_bots[0]
+    p2 = selected_bots[1]
+
+    print(f"----- TOURNAMENT #", pair_index + 1, " -----")
     print(f"CHOSEN BOTS:\n P1: {p1.name}\n P2: {p2.name}\n")
-    # Game loop
-    gameHistory = []
-    while (turn < len(game["rounds"])):
-        
-        round = game[turn]
 
-        roundResults = playRound(p1, p2, gameHistory, round, turn)
+    # Tournament
+    gameIndex = 0
+    while (gameIndex < len(games)):
+        # Choose new game
+        game = games[gameIndex]
 
-        gameHistory.append(roundResults)
+        #print(f"CHOSEN GAME: {game['name']}\n")       
 
-        totalSums[0] += roundResults[0]
-        totalSums[1] += roundResults[1]
-        
-        turn += 1
+        # Game loop
+        gameHistory = []
+        turn = 0
+        while (turn < len(game["rounds"])):
+            
+            # Select round
+            round = game["rounds"][turn]
 
-    displayGameStats(game)
-    gameIndex = gameIndex + 1
+            # Get round results
+            roundResults = playRound(p1, p2, gameHistory, round, turn)
 
-displayTournamentStats()
+            # Add round to game history
+            gameHistory.append(roundResults)
+
+            # Add to global point sum
+            standings[p1.name] += roundResults["results"][0]
+            standings[p2.name] += roundResults["results"][1]
+            
+            turn += 1
+
+        tournament.append(gameHistory)
+        #displayGameStats(gameHistory)
+        gameIndex = gameIndex + 1
+
+    pair_index += 1
+
+    #displayTournamentStats()
+
+displayChampionshipStats(standings)
